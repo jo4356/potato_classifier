@@ -1,3 +1,4 @@
+from distutils.log import debug
 import os
 import numpy as np
 import pandas as pd
@@ -9,7 +10,7 @@ from dash import Dash, html, dcc, Output, Input, State
 import dash_bootstrap_components as dbc
 
 
-app = Dash(__name__)
+app = Dash(__name__, external_stylesheets=[dbc.themes.MINTY])
 server = app.server
 app.title = "Potato Classifier"
 
@@ -44,14 +45,46 @@ def predict(image_path):
 
 
 
+def parse_content(content, filename):
+    return html.Div([
+        html.H5(filename),
+        html.Img(src=content)
+    ])
+
+
 app.layout = dbc.Container(
-    [dbc.Row([html.P("123")])]
-
-
+    [dbc.Row([html.H1("Potato Classifier")]),
+     dbc.Row([html.P("Upload Image:")]),
+     dbc.Row([
+        dbc.Col(
+            html.Div([dcc.Upload(html.Button("Upload"), id="upload_image")])
+                ),
+        dbc.Col(html.Button("Predict!"), 
+                style={"border": "#9E0600", "border-radius":"10px", "width":"10%"})]),
+    
+    dbc.Row([html.Div(id="output_image")])
+              
+              
+              
+    ]
 )
 
 
 
 
+@app.callback(Output("output_image", "children"),
+                Input("upload_image", "contents"),
+                State("upload_image", "filename"))
+
+
+def outdate_output(content, file_name):
+    children = parse_content(content, file_name)
+
+    return children
+
+
+
+
+
 if __name__ == '__main__':
-    app.run_server()
+    app.run_server(debug=True)
