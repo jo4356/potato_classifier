@@ -5,7 +5,7 @@ import torch
 from torch import nn
 from torchvision import transforms, models
 from PIL import Image
-from dash import Dash, html, dcc, Output, Input, State, ctx
+from dash import Dash, html, dcc, Output, Input, State
 from io import BytesIO
 
 
