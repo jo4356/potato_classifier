@@ -1,0 +1,6 @@
+gunicorn
+dash==2.6.1
+dash_bootstrap_components
+pytorch==1.6.0
+numpy
+pandas
