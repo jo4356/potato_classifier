@@ -1,16 +1,15 @@
-from distutils.log import debug
-import os
 import numpy as np
 import pandas as pd
+import re
+import base64
+import dash_bootstrap_components as dbc
 import torch
 from torch import nn
 from torchvision import transforms, models
 from PIL import Image
 from dash import Dash, html, dcc, Output, Input, State, ctx
-import dash_bootstrap_components as dbc
-import base64
 from io import BytesIO
-import re
+
 
 
 app = Dash(__name__, external_stylesheets=[dbc.themes.MINTY],
@@ -23,10 +22,6 @@ app.title = "Potato Classifier"
 
 
 IMAGE_SIZE = 100
-
-
-# def parse_content(content, filename):
-    
 
 
 def predict(uploaded_image):
@@ -44,7 +39,7 @@ def predict(uploaded_image):
     potato_model = models.squeezenet1_0(num_classes=4)
     potato_model.features[0] = nn.Conv2d(3, 100, kernel_size=(3, 3), stride=(2, 2))
     potato_model.features[3].squeeze = nn.Conv2d(100, 16, kernel_size=(1, 1), stride=(1, 1))
-    potato_model.load_state_dict(torch.load("../model/model.pt"))
+    potato_model.load_state_dict(torch.load("model/model.pt"))
 
     pred_prob = potato_model(image)
     labels = ['red', 'red_washed', 'sweet', 'white']
@@ -90,7 +85,7 @@ def display_upload(content, file_name):
 
 @app.callback(Output("prediction", "children"),
                 Input("predict_button", "n_clicks"),
-                Input("upload_image", "contents"), prevent_initial_call=True)
+                Input("upload_image", "contents"))
 
 def display_prediction(n_clicks, image):
     if n_clicks != 0:
