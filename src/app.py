@@ -6,11 +6,16 @@ import torch
 from torch import nn
 from torchvision import transforms, models
 from PIL import Image
-from dash import Dash, html, dcc, Output, Input, State
+from dash import Dash, html, dcc, Output, Input, State, ctx
 import dash_bootstrap_components as dbc
+import base64
+from io import BytesIO
+import re
 
 
-app = Dash(__name__, external_stylesheets=[dbc.themes.MINTY])
+app = Dash(__name__, external_stylesheets=[dbc.themes.MINTY],
+    prevent_initial_callbacks=True, suppress_callback_exceptions=True)
+
 server = app.server
 app.title = "Potato Classifier"
 
@@ -20,14 +25,19 @@ app.title = "Potato Classifier"
 IMAGE_SIZE = 100
 
 
-def predict(image_path):
+# def parse_content(content, filename):
+    
+
+
+def predict(uploaded_image):
 
     transformer = transforms.Compose([transforms.Resize((IMAGE_SIZE, IMAGE_SIZE)),
                                   transforms.RandomRotation(degrees=20),
                                   transforms.ToTensor()])
 
 
-    image = Image.open(image_path)
+    image = re.sub('^data:image/.+;base64,', '', uploaded_image)
+    image = Image.open(BytesIO(base64.b64decode(image)))
     image = transformer(image)
     image = image[None, :]
 
@@ -41,15 +51,11 @@ def predict(image_path):
     prediction = labels[pred_prob.argmax()]
     
 
-    return pred_prob, labels, prediction
+    return prediction
 
 
 
-def parse_content(content, filename):
-    return html.Div([
-        html.H5(filename),
-        html.Img(src=content)
-    ])
+
 
 
 app.layout = dbc.Container(
@@ -59,31 +65,38 @@ app.layout = dbc.Container(
         dbc.Col(
             html.Div([dcc.Upload(html.Button("Upload"), id="upload_image")])
                 ),
-        dbc.Col(html.Button("Predict!"), 
+        dbc.Col(html.Button("Predict!", id="predict_button", n_clicks=0), 
                 style={"border": "#9E0600", "border-radius":"10px", "width":"10%"})]),
     
-    dbc.Row([html.Div(id="output_image")])
-              
-              
-              
+    dbc.Row([html.Div(id="display_image")]),
+    dbc.Row([html.Div(id="prediction")], style={"border": "#9E0600", "border-radius":"10px"})      
     ]
 )
 
 
 
 
-@app.callback(Output("output_image", "children"),
-                Input("upload_image", "contents"),
+@app.callback(Output("display_image", "children"),                
+                Input("upload_image", "contents"),                
                 State("upload_image", "filename"))
 
+def display_upload(content, file_name):
+    return html.Div([
+        html.H5(file_name),
+        html.Img(src=content, id="image")
+    ])
 
-def outdate_output(content, file_name):
-    children = parse_content(content, file_name)
-
-    return children
 
 
+@app.callback(Output("prediction", "children"),
+                Input("predict_button", "n_clicks"),
+                Input("upload_image", "contents"), prevent_initial_call=True)
 
+def display_prediction(n_clicks, image):
+    if n_clicks != 0:
+        predictions = predict(image)
+        
+        return  html.Div([html.P(predictions)])
 
 
 if __name__ == '__main__':
