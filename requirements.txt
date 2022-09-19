@@ -1,6 +1,7 @@
 gunicorn
 dash==2.6.1
 dash_bootstrap_components
-pytorch
+torch
+torchvision
 numpy
 pandas
