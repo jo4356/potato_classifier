@@ -1,5 +1,3 @@
-import numpy as np
-import pandas as pd
 import re
 import base64
 import dash_bootstrap_components as dbc
@@ -58,7 +56,8 @@ app.layout = dbc.Container(
      dbc.Row([html.P("Upload Image:")]),
      dbc.Row([
         dbc.Col(
-            html.Div([dcc.Upload(html.Button("Upload"), id="upload_image")])
+            html.Div([dcc.Upload(html.Button("Upload"),
+                                id="upload_image")])
                 ),
         dbc.Col(html.Button("Predict!", id="predict_button", n_clicks=0), 
                 style={"border": "#9E0600", "border-radius":"10px", "width":"10%"})]),
@@ -95,4 +94,4 @@ def display_prediction(n_clicks, image):
 
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server(debug=False)
